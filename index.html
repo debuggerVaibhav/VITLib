@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VITLib — Intelligent Library &amp; Circulation System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&amp;family=Special+Elite&amp;family=Source+Sans+3:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+
+  <!-- ===================== HEADER &amp; NAVIGATION ===================== -->
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="#top" class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="26" height="26">
+            <rect x="5" y="6" width="7" height="28" rx="1" fill="currentColor" opacity="0.55"/>
+            <rect x="14" y="4" width="7" height="30" rx="1" fill="currentColor" opacity="0.8"/>
+            <rect x="23" y="8" width="7" height="26" rx="1" fill="currentColor"/>
+            <rect x="32" y="10" width="3" height="24" rx="1" fill="currentColor" opacity="0.55"/>
+          </svg>
+        </span>
+        VITLib
+      </a>
+
+      <nav class="main-nav" id="mainNav">
+        <a href="#desk" class="nav-link">Desk</a>
+        <a href="#catalog" class="nav-link">Catalog</a>
+        <a href="#myBooksSection" class="nav-link" id="myBooksNavLink" style="display: none;">My Borrows</a>
+        <a href="#history" class="nav-link">Loan Ledger</a>
+        <a href="#stats" class="nav-link">About</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Librarian Quick Actions -->
+        <button class="btn btn-ghost" id="addBtn" style="display: none;">+ Add Title</button>
+        <span id="librarianBadge" class="badge-role badge-librarian" style="display: none;">Staff: Librarian</span>
+
+        <!-- Member Quick Badge -->
+        <div id="memberBadge" class="badge-role badge-member" style="display: none;">
+          <span class="member-dot"></span>
+          <span id="memberNameDisplay">Member</span>
+        </div>
+
+        <!-- Logged Out Auth Controls -->
+        <div id="loggedOutControls" class="auth-buttons-group">
+          <button class="btn btn-ghost" id="memberSignInBtn">Member Sign In</button>
+          <button class="btn btn-solid" id="librarianSignInBtn">Staff Portal</button>
+        </div>
+
+        <!-- Logged In Auth Control -->
+        <button class="btn btn-outline" id="signOutBtn" style="display: none;">Sign out</button>
+        
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===================== MAIN CONTENT ===================== -->
+  <main id="top">
+
+    <!-- ===================== HERO / CIRCULATION DESK ===================== -->
+    <section class="hero" id="desk">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Circulation &amp; Discovery System</p>
+          <h1>Every book, borrower &amp;<br>due date — <span>on one shelf.</span></h1>
+          <p class="hero-sub">Search our collection, borrow titles instantly with your library pass, chat with our AI Book Advisor for opinions &amp; reviews, and track your loans.</p>
+
+          <form class="finder" id="finderForm" role="search">
+            <label class="sr-only" for="findInput">Search the catalog</label>
+            <input type="text" id="findInput" placeholder="Search by title, author, ISBN, or topic…" autocomplete="off">
+            <select id="findCategory" aria-label="Filter by genre">
+              <option value="all">All genres</option>
+              <option value="fiction">Fiction</option>
+              <option value="science">Science</option>
+              <option value="biography">Biography</option>
+              <option value="reference">Reference</option>
+            </select>
+            <button type="submit" class="btn btn-solid">Search catalog</button>
+          </form>
+
+          <div class="hero-tags">
+            <span>Quick picks:</span>
+            <button class="chip" data-quickfind="midnight">Midnight Library</button>
+            <button class="chip" data-quickfind="gatsby">Great Gatsby</button>
+            <button class="chip" data-quickfind="data structures">Data Structures</button>
+            <button class="chip" data-quickfind="lovelace">Ada Lovelace</button>
+            <button class="chip" data-quickfind="steve jobs">Steve Jobs</button>
+          </div>
+
+          <!-- Role Banner Information -->
+          <div class="role-hint-banner" id="roleHintBanner">
+            <span class="hint-icon">💡</span>
+            <span id="roleHintText">Looking to borrow? <strong>Sign in as a Member</strong>. Library staff? Access the <strong>Staff Portal</strong> to manage book stock &amp; availability.</span>
+          </div>
+        </div>
+
+        <!-- Circulation Desk Live Board -->
+        <div class="desk-board" aria-label="Live circulation desk activity">
+          <div class="desk-head">
+            <span class="desk-dot" aria-hidden="true"></span>
+            AT THE CIRCULATION DESK — LIVE DISPATCH
+            <span class="desk-clock" id="liveClock">--:--:--</span>
+          </div>
+          <div class="desk-cols">
+            <span>TITLE</span><span>BORROWER</span><span>ACTION</span>
+          </div>
+          <div class="desk-rows" id="deskRows">
+            <!-- Dynamically populated from lib.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== STATS STRIP ===================== -->
+    <section class="stats" id="stats">
+      <div class="wrap stats-grid">
+        <div class="stat">
+          <span class="stat-num" id="statTitles" data-count="12">12</span>
+          <span class="stat-label">Titles in catalog</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statAvailable" data-count="8">8</span>
+          <span class="stat-label">Books available now</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statLoans" data-count="4">4</span>
+          <span class="stat-label">Active loans &amp; holds</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num" id="statMembers" data-count="6350">6,350</span>
+          <span class="stat-label">Registered members</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== MEMBER BORROWED BOOKS SECTION ===================== -->
+    <section class="section section-user-shelf" id="myBooksSection">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Personal Reading Ledger</p>
+            <h2>My Borrowed Books &amp; History</h2>
+          </div>
+          <p class="section-note" id="userShelfNote">Keep track of your active loans, due dates, and return books back to the shelf.</p>
+        </div>
+
+        <div id="userShelfContainer">
+          <!-- Populated by lib.js based on logged in member -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CATALOG ===================== -->
+    <section class="section" id="catalog">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Library Stacks</p>
+            <h2>Browse the Catalog</h2>
+          </div>
+          <div class="catalog-header-actions">
+            <div class="filter-row" id="filterRow">
+              <button class="filter-btn is-active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="fiction">Fiction</button>
+              <button class="filter-btn" data-filter="science">Science</button>
+              <button class="filter-btn" data-filter="biography">Biography</button>
+              <button class="filter-btn" data-filter="reference">Reference</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Librarian helper banner (shown when logged in as librarian) -->
+        <div class="librarian-toolbar-banner" id="librarianToolbar" style="display: none;">
+          <div class="toolbar-info">
+            <strong>⚙️ Librarian Mode Enabled:</strong> You have full catalog privileges. Use the dropdown on each book card to flip availability instantly, or remove items.
+          </div>
+          <button class="btn btn-solid btn-sm" id="addBtnCatalog">+ Add New Book</button>
+        </div>
+
+        <div class="book-grid" id="catalogGrid">
+          <!-- Filled dynamically by lib.js -->
+        </div>
+        <p class="empty-state" id="catalogEmpty" hidden>No titles match that search — try another author, subject, or genre filter.</p>
+      </div>
+    </section>
+
+    <!-- ===================== GLOBAL LOAN HISTORY ===================== -->
+    <section class="section section-alt" id="history">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Stamped &amp; Verified</p>
+            <h2>Loan History Ledger</h2>
+          </div>
+          <p class="section-note">Every checkout leaves a permanent archival stamp — recording what's borrowed, who took it, and when it returned.</p>
+        </div>
+
+        <div class="slip-grid" id="historyGrid">
+          <!-- Filled dynamically by lib.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CALL TO ACTION ===================== -->
+    <section class="cta">
+      <div class="wrap cta-inner">
+        <h2>Cataloguing a new arrival or looking for recommendations?</h2>
+        <p>Librarians can register new acquisitions to the live catalog in seconds. Readers can ask our AI Book Advisor for opinions, ratings, and reviews.</p>
+        <div class="cta-actions">
+          <button class="btn btn-solid" id="addBtn2" style="display: none;">+ Add a New Title</button>
+          <button class="btn btn-ghost" id="openChatCtaBtn">💬 Ask Book Advisor &amp; Reviews</button>
+        </div>
+        <p id="ctaAuthNotice" class="cta-notice">Librarian access required to add or delete catalog entries.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== SITE FOOTER ===================== -->
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div>
+        <a href="#top" class="brand brand-footer">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 40 40" width="22" height="22">
+              <rect x="5" y="6" width="7" height="28" rx="1" fill="currentColor" opacity="0.55"/>
+              <rect x="14" y="4" width="7" height="30" rx="1" fill="currentColor" opacity="0.8"/>
+              <rect x="23" y="8" width="7" height="26" rx="1" fill="currentColor"/>
+              <rect x="32" y="10" width="3" height="24" rx="1" fill="currentColor" opacity="0.55"/>
+            </svg>
+          </span>
+          VITLib
+        </a>
+        <p class="footer-tag">An intelligent circulation ledger for every volume, reader, and review.</p>
+      </div>
+      <div class="footer-cols">
+        <div>
+          <h3>Navigation</h3>
+          <a href="#desk">Circulation desk</a>
+          <a href="#catalog">Browse catalog</a>
+          <a href="#history">Loan ledger</a>
+          <a href="#stats">Library stats</a>
+        </div>
+        <div>
+          <h3>Member Services</h3>
+          <a href="javascript:void(0)" id="footerMemberLogin">Member Login</a>
+          <a href="javascript:void(0)" id="footerMyLoans">My Borrowed Books</a>
+          <a href="javascript:void(0)" id="footerOpenChat">Book Opinions &amp; Reviews</a>
+        </div>
+        <div>
+          <h3>Administration</h3>
+          <a href="javascript:void(0)" id="footerStaffLogin">Librarian Portal</a>
+          <a href="javascript:void(0)" id="footerAddBook">Manage Catalog</a>
+        </div>
+      </div>
+    </div>
+    <div class="wrap footer-bottom">
+      <span>© 2026 VITLib — Library Management &amp; Circulation System. All rights reserved.</span>
+    </div>
+  </footer>
+
+  <!-- ================================================================= -->
+  <!-- MODALS &amp; OVERLAYS                                                -->
+  <!-- ================================================================= -->
+
+  <!-- 1. MEMBER AUTHENTICATION MODAL -->
+  <div class="modal-backdrop" id="memberAuthModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="memberAuthTitle">
+      <button class="modal-close" id="memberAuthModalClose" aria-label="Close modal">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="memberTabLogin">Member Sign In</button>
+        <button class="auth-tab" id="memberTabRegister">New Reader Pass</button>
+      </div>
+
+      <!-- Quick Demo Login Bar -->
+      <div class="quick-demo-box">
+        <span>⚡ Quick Testing:</span>
+        <button type="button" class="demo-btn" id="demoMemberLoginBtn">Login as Student (Alex Sharma)</button>
+      </div>
+
+      <!-- Member Login Form -->
+      <form id="memberLoginForm">
+        <p class="eyebrow" id="memberAuthTitle">Reader Account</p>
+        <h3>Sign In to Borrow</h3>
+        <p class="modal-sub">Log in with your library credentials to borrow books and view your loan history.</p>
+        <label>
+          Email Address
+          <input type="email" id="memberLoginEmail" required placeholder="alex.sharma@vitlib.edu" autocomplete="username">
+        </label>
+        <label>
+          Password
+          <input type="password" id="memberLoginPassword" required placeholder="••••••••" autocomplete="current-password">
+        </label>
+        <button type="submit" class="btn btn-solid btn-full">Sign In as Member</button>
+      </form>
+
+      <!-- Member Register Form -->
+      <form id="memberRegisterForm" style="display: none;">
+        <p class="eyebrow">New Reader Registration</p>
+        <h3>Get Your Library Pass</h3>
+        <p class="modal-sub">Join VITLib to borrow books, place holds, and get personalized recommendations.</p>
+        <label>
+          Full Name
+          <input type="text" id="memberRegName" required placeholder="e.g. Priyanshu Roy">
+        </label>
+        <label>
+          Email Address
+          <input type="email" id="memberRegEmail" required placeholder="priyanshu@vitlib.edu">
+        </label>
+        <label>
+          Student / Card ID
+          <input type="text" id="memberRegCard" required placeholder="e.g. VIT-STD-9921">
+        </label>
+        <label>
+          Create Password
+          <input type="password" id="memberRegPassword" required placeholder="••••••••">
+        </label>
+        <button type="submit" class="btn btn-solid btn-full">Create Member Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. LIBRARIAN AUTHENTICATION MODAL -->
+  <div class="modal-backdrop" id="librarianAuthModalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="librarianAuthTitle">
+      <button class="modal-close" id="librarianAuthModalClose" aria-label="Close modal">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="librarianTabLogin">Staff Login</button>
+        <button class="auth-tab" id="librarianTabRegister">Staff Register</button>
+      </div>
+
+      <!-- Quick Demo Login Bar -->
+      <div class="quick-demo-box librarian-demo-box">
+        <span>⚡ Quick Testing:</span>
+        <button type="button" class="demo-btn librarian-demo-btn" id="demoLibrarianLoginBtn">Login as Librarian (Dr. Eleanor Vance)</button>
+      </div>
+
+      <!-- Librarian Login Form -->
+      <form id="librarianLoginForm">
+        <p class="eyebrow" id="librarianAuthTitle">Circulation Desk Access</p>
+        <h3>Staff Management Sign In</h3>
+        <p class="modal-sub">Authorized personnel access for book cataloguing, availability management, and inventory records.</p>
+        <label>
+          Staff Email Address
+          <input type="email" id="librarianLoginEmail" required placeholder="librarian@vitlib.edu" autocomplete="username">
+        </label>
+        <label>
+          Staff Password
+          <input type="password" id="librarianLoginPassword" required placeholder="••••••••" autocomplete="current-password">
+        </label>
+        <button type="submit" class="btn btn-solid btn-full">Authenticate Staff Access</button>
+      </form>
+
+      <!-- Librarian Register Form -->
+      <form id="librarianRegisterForm" style="display: none;">
+        <p class="eyebrow">Staff Onboarding</p>
+        <h3>Create Staff Account</h3>
+        <p class="modal-sub">Create credentials for library management. Requires staff authorization code.</p>
+        <label>
+          Staff Full Name
+          <input type="text" id="librarianRegName" required placeholder="e.g. Dr. Eleanor Vance">
+        </label>
+        <label>
+          Official Email
+          <input type="email" id="librarianRegEmail" required placeholder="e.vance@vitlib.edu">
+        </label>
+        <label>
+          Staff Authorization Key
+          <input type="text" id="librarianRegKey" required placeholder="VIT-STAFF-2026" value="VIT-STAFF-2026">
+        </label>
+        <label>
+          Password
+          <input type="password" id="librarianRegPassword" required placeholder="••••••••">
+        </label>
+        <button type="submit" class="btn btn-solid btn-full">Register Librarian Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. BORROW CHECKOUT MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="modal-close" id="modalClose" aria-label="Close modal">&times;</button>
+      <p class="eyebrow" id="modalEyebrow">Official Checkout Slip</p>
+      <h3 id="modalTitle">Book Title</h3>
+      <p class="modal-meta" id="modalMeta">Author · Call number</p>
+
+      <form id="modalForm">
+        <div class="checkout-details-card">
+          <div class="checkout-row">
+            <span>Borrower:</span>
+            <strong id="borrowerNameDisplay">—</strong>
+          </div>
+          <div class="checkout-row">
+            <span>Card ID:</span>
+            <strong id="borrowerCardDisplay">—</strong>
+          </div>
+          <div class="checkout-row">
+            <span>Loan Duration:</span>
+            <strong>14 Calendar Days</strong>
+          </div>
+          <div class="checkout-row">
+            <span>Calculated Due Date:</span>
+            <strong class="highlight-date" id="borrowerCalculatedDueDate">—</strong>
+          </div>
+        </div>
+
+        <label>
+          Confirm Contact Email
+          <input type="email" id="borrowerEmailInput" required placeholder="you@vitlib.edu">
+        </label>
+        <label class="checkbox-container">
+          <input type="checkbox" id="borrowerAgreeCheck" required checked>
+          <span>I agree to return this volume within 14 days and respect library loan policies.</span>
+        </label>
+        <button type="submit" class="btn btn-solid btn-full" id="confirmBorrowBtn">Confirm &amp; Stamp Checkout</button>
+      </form>
+
+      <div class="modal-success" id="modalSuccess" hidden>
+        <div class="stamp-mark">DUE<br><span id="modalDueDate">15 OCT</span></div>
+        <p><strong>Checkout Complete!</strong><br>The book has been stamped to your account and recorded at the circulation desk.</p>
+        <button type="button" class="btn btn-outline btn-full" id="modalDoneBtn" style="margin-top: 14px;">Done &amp; View My Borrows</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. ADD BOOK MODAL (FOR LIBRARIAN) -->
+  <div class="modal-backdrop" id="addBookModalBackdrop">
+    <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="addBookTitle">
+      <button class="modal-close" id="addBookModalClose" aria-label="Close modal">&times;</button>
+      <p class="eyebrow" id="addBookTitle">Catalog Administration</p>
+      <h3>Add New Book to Library</h3>
+      <p class="modal-sub">Enter book specifications. The book will immediately be indexed, searchable, and available to members.</p>
+      
+      <form id="addBookForm">
+        <div class="form-grid">
+          <label>
+            Book Title
+            <input type="text" id="newTitle" required placeholder="e.g. Design Patterns">
+          </label>
+          <label>
+            Author(s)
+            <input type="text" id="newAuthor" required placeholder="e.g. Erich Gamma et al.">
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            ISBN Number
+            <input type="text" id="newIsbn" required placeholder="e.g. 9780201633610">
+          </label>
+          <label>
+            Library Call Number
+            <input type="text" id="newCallNumber" required placeholder="e.g. SCI GAM">
+          </label>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            Genre / Category
+            <select id="newGenre" class="modal-select">
+              <option value="fiction">Fiction</option>
+              <option value="science">Science</option>
+              <option value="biography">Biography</option>
+              <option value="reference">Reference</option>
+            </select>
+          </label>
+          <label>
+            Initial Availability Status
+            <select id="newStatus" class="modal-select">
+              <option value="available">Available (On Shelf)</option>
+              <option value="onloan">On Loan (Checked Out)</option>
+              <option value="reserved">Reserved (Hold)</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Brief Synopsis &amp; Review Summary (For AI Book Advisor)
+          <textarea id="newDescription" class="modal-textarea" rows="3" placeholder="A brief description, themes, and key reader opinions to assist readers and the chatbot."></textarea>
+        </label>
+
+        <button type="submit" class="btn btn-solid btn-full" style="margin-top: 10px;">Index Book into Catalog</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- 5. INTERACTIVE CHATBOT (AI BOOK ADVISOR &amp; REVIEWS)                 -->
+  <!-- ================================================================= -->
+  
+  <!-- Floating Chatbot Launcher Button -->
+  <button class="chat-launcher" id="chatLauncher" aria-label="Open AI Book Advisor &amp; Reviews Chatbot">
+    <div class="chat-launcher-badge">AI</div>
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+    </svg>
+    <span class="chat-launcher-text">Book Advisor</span>
+  </button>
+
+  <!-- Expandable Chatbot Window -->
+  <aside class="chat-widget" id="chatWidget" aria-label="Book Advisor Chat Window">
+    <div class="chat-header">
+      <div class="chat-header-identity">
+        <div class="chat-avatar">📖</div>
+        <div>
+          <h4 class="chat-title">Libby · Book Advisor</h4>
+          <span class="chat-status"><span class="chat-status-dot"></span> Live catalog &amp; reviews</span>
+        </div>
+      </div>
+      <div class="chat-header-controls">
+        <button class="chat-icon-btn" id="chatResetBtn" title="Reset conversation" aria-label="Reset chat">🔄</button>
+        <button class="chat-icon-btn" id="chatMinimizeBtn" title="Minimize chat" aria-label="Close chat">&times;</button>
+      </div>
+    </div>
+
+    <!-- Quick Prompt Pills -->
+    <div class="chat-quick-prompts" id="chatQuickPrompts">
+      <button class="quick-prompt-chip" data-prompt="What are the reviews for The Midnight Library?">⭐ Midnight Library Review</button>
+      <button class="quick-prompt-chip" data-prompt="Recommend me a good science book">🔬 Science Book</button>
+      <button class="quick-prompt-chip" data-prompt="Which books are available to borrow right now?">📚 What's Available?</button>
+      <button class="quick-prompt-chip" data-prompt="Opinions on The Great Gatsby">🍸 Gatsby Opinions</button>
+      <button class="quick-prompt-chip" data-prompt="How do I borrow books and return them?">ℹ️ Borrowing Rules</button>
+    </div>
+
+    <!-- Message Area -->
+    <div class="chat-messages" id="chatMessages">
+      <!-- Injected by lib.js -->
+    </div>
+
+    <!-- Chat Input Form -->
+    <form class="chat-input-row" id="chatForm">
+      <input type="text" id="chatInput" placeholder="Ask for book opinions, reviews, or recommendations…" autocomplete="off" required>
+      <button type="submit" class="chat-send-btn" id="chatSendBtn" aria-label="Send message">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </form>
+  </aside>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+  <!-- Main JavaScript File -->
+  <script src="lib.js"></script>
+</body>
+</html>
